@@ -21,10 +21,10 @@ type ILedger = {
     transfers: [ILedgerTransfer]
 }
 type props = {
-    walletHash: string
+    walletAddress: string
 }
-const Ledger = ({walletHash}: props) => {
-    const url = `https://rpc.walletconnect.com/v1/account/${walletHash}/history?projectId=7cf03f144bfc35f92501d533a91f20ed`
+const Ledger = ({walletAddress}: props) => {
+    const url = `https://rpc.walletconnect.com/v1/account/${walletAddress}/history?projectId=7cf03f144bfc35f92501d533a91f20ed`
     // State to store the fetched data
     const [data, setData] = useState<ILedger[]>([]);
     // State to track loading status
@@ -64,15 +64,15 @@ const Ledger = ({walletHash}: props) => {
         };
 
         // Call the fetchData function when the component mounts
-        if(walletHash !== ''){
+        if(walletAddress !== ''){
             fetchData();
         }
      
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [walletHash]); // Empty dependency array to ensure useEffect only runs once
+    }, [walletAddress]); // Empty dependency array to ensure useEffect only runs once
 
-    if( walletHash === '') return 
+    if( walletAddress === '') return 
 
     // If loading, display a loading message
     if (loading) {
