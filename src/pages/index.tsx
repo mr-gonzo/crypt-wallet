@@ -1,11 +1,9 @@
 import Head from "next/head";
 import styles from "@/styles/Home.module.css";
 import AppHeader from "@/components/header";
-import { useBalance } from 'wagmi'
 import { useState } from "react";
-import type { Address } from "wagmi";
-import Ledger from "@/components/ledger";
 import Balance from "@/components/balance"
+import Ledger from "@/components/ledger";
 
 export default function Home() {
 	const [address, setAddress] = useState<string>('')
@@ -13,7 +11,7 @@ export default function Home() {
 	return (
 		<>
 			<Head>
-				<title>Wallet CPA</title>
+				<title>Inu Capital</title>
 				<meta
 					name="description"
 					content="dapp to calculate tax gains and losses"
@@ -28,9 +26,9 @@ export default function Home() {
 			<main className={styles.main}>
 				<div className={styles.wrapper}>
 					<div className={styles.container}>
-						<h1>Wallet Transactions</h1>
-						<Balance walletAddress={address} setAddress={setAddress}/>
-						<Ledger walletAddress={address}/>
+						<h1>Account Transactions</h1>
+						<Balance accountAddress={address} setAddress={setAddress}/>
+						<Ledger accountAddress={address}/>
 					</div>	
 				</div>
 			</main>

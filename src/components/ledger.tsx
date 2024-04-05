@@ -1,32 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import styles from "@/styles/Home.module.css";
+import { EthLedgerItem, EthLedgerTransfer } from "@/models/ether/transaction"
 
-type ILedgerMetaData = {
-    operationType: string
-    hash: string
-    status: string
-    minedAt: Date
-}
-type ILedgerTransfer = {
-    fungible_info: { name: string, symbol: string }
-    nft_info: { flags: { is_spam: boolean } }
-    direction: string
-    quantity: { numeric: string }
-    value: number
-    price: number
-}
-type ILedger = {
-    id: string
-    metadata: ILedgerMetaData
-    transfers: [ILedgerTransfer]
-}
 type props = {
-    walletAddress: string
+    accountAddress: string
 }
-const Ledger = ({walletAddress}: props) => {
-    const url = `https://rpc.walletconnect.com/v1/account/${walletAddress}/history?projectId=7cf03f144bfc35f92501d533a91f20ed`
+const Ledger = ({ accountAddress }: props) => {
+    const ethUrl = `http://localhost:3000/api/transaction/ether?walletAddress=${accountAddress}`
+    const solanaUrl = `http://localhost:3000/api/transaction/solana?walletAddress=${accountAddress}`
+
     // State to store the fetched data
-    const [data, setData] = useState<ILedger[]>([]);
+    const [data, setData] = useState<[]>([]);
     // State to track loading status
     const [loading, setLoading] = useState(true);
     // State to track error status
@@ -36,26 +20,26 @@ const Ledger = ({walletAddress}: props) => {
         const fetchData = async () => {
             try {
                 // Make a fetch request to your data source
-                const response = await fetch(url);
+                let response = await fetch(solanaUrl);
 
                 // Check if the request was successful
-                if (!response.ok) {
-                    throw new Error('Failed to fetch data');
-                }
+                // if (!response.ok) {
+                //     throw new Error('Failed to fetch data');
+                // }
 
                 // Parse the response as JSON
-                const jsonData = await response.json();
+                let jsonData = await response.json();
 
+                if(!jsonData || !jsonData.transactions || jsonData.transactions.length ===0){
+                    response = await fetch(ethUrl);
+                    jsonData = await response.json();
+                }
                 // Set the fetched data in the state
-                const resp = jsonData.data
-                const filteredResp = resp.filter((tx: ILedger) =>{
-                    if(tx.transfers[0]?.nft_info?.flags?.is_spam) return false;
-                    if(tx.transfers[0]?.fungible_info?.symbol?.length > 5) return false
-                    else return true;
-
-                })
-                setData(filteredResp);
+                const resp = jsonData.transactions
+          
+                setData(resp);
                 setLoading(false);
+                setError(null);
             } catch (error: Error | any) {
                 // Set error state if an error occurs
                 setError(error);
@@ -64,15 +48,15 @@ const Ledger = ({walletAddress}: props) => {
         };
 
         // Call the fetchData function when the component mounts
-        if(walletAddress !== ''){
+        if (accountAddress !== '') {
             fetchData();
         }
-     
+
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [walletAddress]); // Empty dependency array to ensure useEffect only runs once
+    }, [accountAddress]); // Empty dependency array to ensure useEffect only runs once
 
-    if( walletAddress === '') return 
+    if (accountAddress === '') return
 
     // If loading, display a loading message
     if (loading) {
@@ -97,45 +81,33 @@ const Ledger = ({walletAddress}: props) => {
                 <div className={styles.ledgerCell}>Asset Transacted</div>
                 <div className={styles.ledgerCell}>Spot Rate</div>
             </div>
-            {/* Your rendering logic for the fetched data */}
+
             {data && (
-                <div>
-                    {data.map((item: ILedger, index: number) => {
-                        if (item.metadata.operationType !== 'receive' && item.metadata.operationType === 'send') return;
-                        return (
-                            <>
-                                <div className={`${styles.ledgerRow} ${styles.ledgerHeader}`} >
-                                    <div className={styles.ledgerCell}>{new Date(item.metadata.minedAt).toDateString()} </div>
-                                </div>
+                data.map((item: any, idx: number) => {
+                    return (
+                        <>
+                            <div key={`${item.id}-date-header-${idx}`} className={`${styles.ledgerRow} ${styles.ledgerHeader}`} >
+                                <div key={`${item.id}-date-${idx}`} className={styles.ledgerCell}>{new Date(item.timestamp).toDateString()} </div>
+                            </div>
 
 
-                                {item.transfers?.map((tx) => {
-                                    if (tx.nft_info?.flags?.is_spam) {
-                                        return (
-                                            <div className={styles.ledgerRow}>
-                                                <div className={styles.ledgerCell}>Spam transaction </div>
-                                            </div>
-                                        )
-                                    }
-
-                                    return (
-                                        <div key={`${item.id}-${index}`} className={styles.ledgerRow}>
-                                            <div className={styles.ledgerCell}>{tx.fungible_info?.symbol?.substring(0, 4)}</div>
-                                            <div className={styles.ledgerCell}>{tx.quantity?.numeric?.substring(0, 5)}</div>
-                                            <div className={styles.ledgerCell}>{tx.price?.toFixed(5)}</div>
-                                            <div className={styles.ledgerCell}>{tx.direction === 'out' ? 'Sell' : 'Buy'} </div>
-                                            <div className={styles.ledgerCell}>Wallet</div>
-                                            <div className={styles.ledgerCell}>TX{item.metadata.hash?.substring(0, 5)}</div>
-                                            <div className={styles.ledgerCell}>N/A</div>
-                                            <div className={styles.ledgerCell}>N/A</div>
-                                        </div>
-                                    )
-                                })}
-                            </>
-                        )
-                    })
-                    }
-                </div>
+                            {item.transfers?.map((tx: any, index: number) => {
+                                return (
+                                    <div key={`${item.id}-row-${index}`} className={styles.ledgerRow}>
+                                        <div key={`${item.id}-sym-${index}`} className={styles.ledgerCell}>{tx.symbol?.substring(0, 4)}</div>
+                                        <div key={`${item.id}-qty-${index}`} className={styles.ledgerCell}>{tx.quantity?.substring(0, 5)}</div>
+                                        <div key={`${item.id}-price-${index}`} className={styles.ledgerCell}>{tx.price?.toFixed(5)}</div>
+                                        <div key={`${item.id}-dir-${index}`} className={styles.ledgerCell}>{tx.type} </div>
+                                        <div key={`${item.id}-wallet-${index}`} className={styles.ledgerCell}>Wallet</div>
+                                        <div key={`${item.id}-tx-${index}`} className={styles.ledgerCell}>TX{tx.hash?.substring(0, 5)}</div>
+                                        <div key={`${item.id}-hash-${index}`} className={styles.ledgerCell}>N/A</div>
+                                        <div key={`${item.id}-na-${index}`} className={styles.ledgerCell}>N/A</div>
+                                    </div>
+                                )
+                            })}
+                        </>
+                    )
+                })
             )}
         </div>
     );

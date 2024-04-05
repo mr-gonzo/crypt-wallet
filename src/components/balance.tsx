@@ -5,24 +5,21 @@ import type { Address } from "wagmi";
 type SetStateFunction<T> = React.Dispatch<React.SetStateAction<T>>;
 
 type props = {
-    walletAddress: string
+    accountAddress: string
     setAddress: SetStateFunction<string>
 }
 
-function Balance({ walletAddress, setAddress }: props) {
+function Balance({ accountAddress, setAddress }: props) {
     const [value, setValue] = useState("");
 
-    const { data, isLoading, refetch } = useBalance({
-        address: walletAddress as Address,
-    });
+    // const { data, isLoading, refetch } = useBalance({
+    //     address: accountAddress as Address,
+    // });
 
     const handleImport = (value: string) => {
-        if(value === walletAddress){
-            refetch()
-        } else {
+        if(value !== accountAddress){
             setAddress(value)
-        }
-
+        } 
     }
 
 
@@ -30,9 +27,10 @@ function Balance({ walletAddress, setAddress }: props) {
         <div>
             Wallet Address: <input onChange={(e) => setValue(e.target.value)} placeholder="wallet address" value={value} />
 
-            <button onClick={() => handleImport(value)}>{isLoading ? "fetching..." : "Import"}</button>
+            <button onClick={() => handleImport(value)}>Import</button>
 
-            {data?.formatted && <div>Balance: {data?.formatted}</div>}      </div>
+            {/* {data?.formatted && <div>Balance: {data?.formatted}</div>}      </div> */}
+            </div>
     );
 }
 
