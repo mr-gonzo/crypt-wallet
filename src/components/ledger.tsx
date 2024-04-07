@@ -75,7 +75,6 @@ const Ledger = ({ accountAddress }: props) => {
                 <div className={styles.ledgerCell}>Units</div>
                 <div className={styles.ledgerCell}>Basis</div>
                 <div className={styles.ledgerCell}>Type</div>
-                {/* <div className={styles.ledgerCell}>Data Source</div> */}
                 <div className={styles.ledgerCell}>ID</div>
                 <div className={styles.ledgerCell}>ID Ref</div>
                 <div className={styles.ledgerCell}>Spot Rate</div>
@@ -94,12 +93,9 @@ const Ledger = ({ accountAddress }: props) => {
                                 return (
                                     <div key={`${item.id}-row-${index}`} className={styles.ledgerRow}>
                                         <div key={`${item.id}-sym-${index}`} className={styles.ledgerCell}>{tx.symbol?.substring(0, 4)}</div>
-                                        {/* <div key={`${item.id}-qty-${index}`} className={styles.ledgerCell}>{tx.quantity?.substring(0, 5)}</div> */}
-                                        <div key={`${item.id}-qty-${index}`} className={styles.ledgerCell}>{tx.price?.toFixed(5)}</div>
-                                        <div key={`${item.id}-price-${index}`} className={styles.ledgerCell}>0</div>
-                                        {/* <div key={`${item.id}-price-${index}`} className={styles.ledgerCell}>{tx.price?.toFixed(5)}</div> */}
+                                        <div key={`${item.id}-value-${index}`} className={styles.ledgerCell}>{tx.value?.toFixed(4)}</div>
+                                        <div key={`${item.id}-price-${index}`} className={styles.ledgerCell}>{tx.price?.toFixed(5)}</div>
                                         <div key={`${item.id}-dir-${index}`} className={styles.ledgerCell}>{tx.type} </div>
-                                        {/* <div key={`${item.id}-wallet-${index}`} className={styles.ledgerCell}>Wallet</div> */}
                                         <div key={`${item.id}-tx-${index}`} className={styles.ledgerCell}>TX{tx.hash?.substring(0, 5)}</div>
                                         <div key={`${item.id}-hash-${index}`} className={styles.ledgerCell}>N/A</div>
                                         <div key={`${item.id}-na-${index}`} className={styles.ledgerCell}>N/A</div>

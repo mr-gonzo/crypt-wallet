@@ -14,39 +14,43 @@ export async function calculateTokenBalanceChanges(preBalances:any, postBalances
     // Iterate over preBalances to calculate net changes
     for (const preBalance of filteredPreBalances) {
         const postBalance = filteredPostBalances.find((balance:any) => balance.mint === preBalance.mint);
-        const value = postBalance 
+        if(!postBalance) continue;
+
+        const postValue = postBalance 
             ? postBalance.uiTokenAmount.uiAmount - preBalance.uiTokenAmount.uiAmount
             : -preBalance.uiTokenAmount.uiAmount; // If no postBalance, the entire amount was deducted
 
             const preSymbol: string = await SolflareService.getSymbol(preBalance?.mint ?? '') || '';
 
-        tokenTransactions.push({
-            timestamp,
-            symbol:preSymbol,
-            quantity:'',
-            type: '',
-            price:'',
-            value,
-            hash
-        });
+            const token = {
+                timestamp,
+                symbol:preSymbol,
+                quantity:'',
+                type: '',
+                price: 0,
+                value: postValue,
+                hash
+            }
+        tokenTransactions.push(token);
     }
 
     // Check for any new tokens added that weren't in preBalances
     for (const postBalance of filteredPostBalances) {
-        const postSymbol = await SolflareService.getSymbol(postBalance?.mint ?? '') || ''
         if (!filteredPreBalances.find((balance:any)  => balance.mint === postBalance.mint)) {
-            tokenTransactions.push({
-            timestamp,
-            symbol:postSymbol,
-            quantity:'',
-            type: '',
-            price:'',
-            value:postBalance.uiTokenAmount.uiAmount, // Entire postBalance is the net addition,
-            hash // Entire postBalance is the net addition
-            });
+            const postSymbol = await SolflareService.getSymbol(postBalance?.mint ?? '') || ''
+
+            const token = {
+                timestamp,
+                symbol:postSymbol,
+                quantity:'',
+                type: '',
+                price: 0,
+                value:postBalance.uiTokenAmount.uiAmount, // Entire postBalance is the net addition,
+                hash // Entire postBalance is the net addition
+                }
+            tokenTransactions.push(token);
         }
     }
 
-    console.log(tokenTransactions)
     return tokenTransactions;
 }

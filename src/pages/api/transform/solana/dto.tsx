@@ -2,7 +2,7 @@ import { calculateTokenBalanceChanges } from './calculateTokenBalanceChange';
 
 export default class SolanaTransform {
     static convertTxToInuCap = async (transactionDetailsArray: any[], publicKey: any, walletAddress: string) => {
-        const allTransactions = [];
+        const allTransactions:any = [];
 
         for (const transactionDetails of transactionDetailsArray) {
             if (!transactionDetails || !transactionDetails.meta || !transactionDetails.blockTime) continue;
@@ -14,15 +14,18 @@ export default class SolanaTransform {
             const hash = transactionDetails.transaction?.signatures[0]; // Assuming first signature is what you're interested in
             const timestamp = new Date(transactionDetails.blockTime * 1000).toISOString();
 
-            const individualTransaction = {
+            const transfers = []
+            const token = {
                 timestamp,
                 symbol: "SOL",
                 quantity: '',
                 type: '',
-                price: '',
+                price: 0,
                 value: (postBalance ?? 0) - (preBalance ?? 0),
                 hash: hash
-            };
+            }
+            transfers.push(token);
+
 
             const preTokenBalances = transactionDetails?.meta?.preTokenBalances ?? [];
             const postTokenBalances = transactionDetails?.meta?.postTokenBalances ?? [];
@@ -37,7 +40,11 @@ export default class SolanaTransform {
 
                 
             // Append the SOL transaction and token balance changes to the allTransactions array.
-            allTransactions.push(individualTransaction, ...tokenChanges);
+            tokenChanges.forEach(token => {
+                transfers.push(token)
+            })
+
+            allTransactions.push({timestamp, transfers})
         }
 
         return allTransactions;
