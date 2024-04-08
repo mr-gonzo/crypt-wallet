@@ -1,5 +1,5 @@
 export default class SolflareService {
-     static symbolsMap: Map<string, string> = new Map()
+     static symbolsMap: Map<string, any> = new Map()
 
     static async getSymbol(mint: string){
         if(!mint || mint === '') return ''
@@ -16,7 +16,7 @@ export default class SolflareService {
         const tokens = jsonData.tokens;
 
         tokens.forEach((token: any) => {
-            this.symbolsMap.set(token.address, token.symbol)
+            this.symbolsMap.set(token.address, {symbol: token.symbol, symbolUri: token.logoURI})
         })
 
         return this.symbolsMap.get(mint);

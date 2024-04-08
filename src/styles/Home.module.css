@@ -186,14 +186,22 @@ span.button:hover {
 .ledgerRow {
 	display: flex;
 	flex-direction: row;
+	align-items: center;
 
 	.ledgerCell {
 		margin: 5px;
 		width: 100px;
+		display: flex;
+    	align-items: center;
+		gap: 7px;
 	}
 }
 
 .ledgerHeader {
 	font-weight: bold;
 	margin-top: 20px;
+}
+
+.round {
+	border-radius: .25rem !important;
 }
