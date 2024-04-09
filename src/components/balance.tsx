@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
-import { useBalance } from 'wagmi'
-import type { Address } from "wagmi";
+// import { useBalance } from 'wagmi'
+// import type { Address } from "wagmi";
 type SetStateFunction<T> = React.Dispatch<React.SetStateAction<T>>;
 
 type props = {

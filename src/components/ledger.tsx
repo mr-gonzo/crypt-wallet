@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import Image from "next/image";
 import styles from "@/styles/Home.module.css";
-import { EthLedgerItem, EthLedgerTransfer } from "@/models/ether/transaction"
+// import { EthLedgerItem, EthLedgerTransfer } from "@/models/ether/transaction"
+import DataObjectsModal from './dataObjectsModal'
 
 type props = {
     accountAddress: string
@@ -12,6 +13,7 @@ const Ledger = ({ accountAddress }: props) => {
 
     // State to store the fetched data
     const [data, setData] = useState<[]>([]);
+  
     // State to track loading status
     const [loading, setLoading] = useState(true);
     // State to track error status
@@ -147,13 +149,13 @@ const Ledger = ({ accountAddress }: props) => {
                                         <div key={`${item.id}-na-${index}`} className={styles.ledgerCell}>{tx.costBasis}</div>
                                     </div>
                                 )
-                            }
-                            })
-                            }
+                            })}
+
                         </>
                     )
                 })
             )}
+            <DataObjectsModal dataObjects={data}/>
         </div>
     );
 };
