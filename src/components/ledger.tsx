@@ -117,6 +117,19 @@ const Ledger = ({ accountAddress }: props) => {
 
 
                             {item.transfers?.map((tx: any, index: number) => {
+                                if(tx.type?.endsWith('GAIN/LOSS') || tx.type === 'CASH'){
+                                    return (
+                                        <div key={`${item.id}-row-${index}`} className={styles.ledgerRow}>
+                                            <div key={`${item.id}-sym-${index}`} className={styles.ledgerCell}></div>
+                                            <div key={`${item.id}-value-${index}`} className={styles.ledgerCell}></div>
+                                            <div key={`${item.id}-price-${index}`} className={styles.ledgerCell}>{tx.value?.toFixed(2)}</div>
+                                            <div key={`${item.id}-dir-${index}`} className={styles.ledgerCell}>{tx.type} </div>
+                                            <div key={`${item.id}-tx-${index}`} className={styles.ledgerCell}></div>
+                                            <div key={`${item.id}-hash-${index}`} className={styles.ledgerCell}></div>
+                                            <div key={`${item.id}-na-${index}`} className={styles.ledgerCell}>{tx.type === 'CASH' ? tx.costBasis : ''}</div>
+                                        </div>
+                                    )
+                                } else {
                                 return (
                                     <div key={`${item.id}-row-${index}`} className={styles.ledgerRow}>
                                         <div key={`${item.id}-sym-${index}`} className={styles.ledgerCell}>
@@ -131,7 +144,7 @@ const Ledger = ({ accountAddress }: props) => {
                                         <div key={`${item.id}-value-${index}`} className={styles.ledgerCell}>{tx.quantity?.toFixed(4)}</div>
                                         <div key={`${item.id}-price-${index}`} className={styles.ledgerCell}>{tx.value?.toFixed(2)}</div>
                                         <div key={`${item.id}-dir-${index}`} className={styles.ledgerCell}>{tx.type} </div>
-                                        <div key={`${item.id}-tx-${index}`} className={styles.ledgerCell}>{tx.hash?.substring(0, 7)}</div>
+                                        <div key={`${item.id}-tx-${index}`} className={styles.ledgerCell}>{item.hash?.substring(0, 7)}</div>
                                         <div key={`${item.id}-hash-${index}`} className={styles.ledgerCell}>{tx.refHash?.substring(0,7)}</div>
                                         <div key={`${item.id}-na-${index}`} className={styles.ledgerCell}>{tx.costBasis}</div>
                                     </div>

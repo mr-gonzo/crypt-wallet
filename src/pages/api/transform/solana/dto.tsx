@@ -1,3 +1,4 @@
+import { timeStamp } from 'console';
 import SolflareService from '../../services/solflare';
 import { extractAdditionalTransfers } from './calculateTokenBalanceChange';
 import { SOL_SYMBOL } from './constants';
@@ -65,6 +66,28 @@ export default class SolanaTransform {
            await addCostBasisToPurchase(allTransactions[i].transfers, despositsMeta)
         }
 
-        return allTransactions;
+        const response = []
+          for (let i = 0; i < allTransactions.length; i++) {
+            let hash = allTransactions[i].transfers[0]?.hash
+            let blockTime = allTransactions[i].transfers[0]?.blockTime
+            let timestamp = allTransactions[i].transfers[0]?.timestamp
+            const cleanTransfers = allTransactions[i].transfers?.map((transfer: any) => {
+                delete transfer.hash
+                delete transfer.blockTime
+                delete transfer.timestamp
+                return transfer
+            })
+            const tx = {
+                blockTime,
+                hash,
+                timestamp,
+                transfers: cleanTransfers
+            }
+
+            response.push(tx)
+            
+         }
+
+        return response;
     }
 }

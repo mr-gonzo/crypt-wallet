@@ -22,9 +22,9 @@ export const setSolSaleAndDeposits = (additionalTransfers: any[]) => {
         additionalTransfers[0].type = 'DEPOSIT'
     }
 
-    if (additionalTransfers[0].symbol === SOL_SYMBOL && additionalTransfers[0].quantity < 0) {
-        additionalTransfers[0].type = 'SELL'
-    }
+    // if (additionalTransfers[0].symbol === SOL_SYMBOL && additionalTransfers[0].quantity < 0) {
+    //     additionalTransfers[0].type = 'SELL'
+    // }
 
 }
 
@@ -34,8 +34,17 @@ export const setTransfer = (additionalTransfers: any[]) => {
 
     if (additionalTransfers[1].type === 'DEPOSIT') return
 
-    additionalTransfers[0].type = 'TRANSFER'
-    additionalTransfers[1].type = 'TRANSFER'
+    for (const transfer of additionalTransfers) {
+
+        if (transfer.quantity > 0) {
+            transfer.type = 'BUY'
+            continue;
+        }
+
+        else if (transfer.quantity < 0) {
+            transfer.type = 'SELL'
+        }
+    }
 }
 
 /**
@@ -51,21 +60,19 @@ export const addCostBasisToPurchase = async (transfers: any[], despositsMeta: an
             const boughtCostBasis = calculateCostBasis(spotPriceMeta)
             transfers[depositToken].value = calculateFiatValue(boughtCostBasis, transfers[depositToken].quantity)
             transfers[depositToken].costBasis = boughtCostBasis
+            transfers[depositToken].vaa = spotPriceMeta?.vaa
 
             despositsMeta.push({
                 symbol: transfers[0].symbol,
                 hash: transfers[0].hash,
                 quantity: transfers[0].quantity,
-                spotPriceMeta: calculateCostBasis(spotPriceMeta)
+                spotPriceMeta: calculateCostBasis(spotPriceMeta),
             })
             return
         }
 
-
         const purchaseToken = transfers.findIndex((transfer: any) => transfer.quantity < 0)
         if (purchaseToken === -1) return
-
-      
 
         const boughtToken = purchaseToken === 1 ? 0 : 1
 
@@ -74,35 +81,42 @@ export const addCostBasisToPurchase = async (transfers: any[], despositsMeta: an
                 despositsMeta[i].quantity = despositsMeta[i].quantity + transfers[purchaseToken].quantity
                 transfers[purchaseToken].refHash = despositsMeta[i].hash
                 transfers[purchaseToken].costBasis = despositsMeta[i].spotPriceMeta
-                const val = calculateFiatValue(despositsMeta[i].spotPriceMeta, transfers[purchaseToken].quantity)
-                transfers[purchaseToken].value = val ? val * -1 : val
-                if(transfers[0].type === 'SELL') break
-                
-                transfers[boughtToken].refHash = despositsMeta[i].hash
+                const preCostBasis = calculateFiatValue(despositsMeta[i].spotPriceMeta, transfers[purchaseToken].quantity)
+                transfers[purchaseToken].value = preCostBasis ? preCostBasis * -1 : preCostBasis
 
+                const postSpotPriceMeta = await getTokenPriceAndVAA(transfers[purchaseToken].blockTime, transfers[purchaseToken].symbol);
+                const postPurchaseCostBasis = calculateCostBasis(postSpotPriceMeta)
+                const postCostBasis = calculateFiatValue(postPurchaseCostBasis, transfers[purchaseToken].quantity)
+                transfers.push({
+                    symbol: '',
+                    symbolUri: '',
+                    quantity: 0,
+                    type: 'CASH',
+                    price: 0,
+                    value: postCostBasis,
+                    hash: transfers[purchaseToken].hash,
+                    costBasis: postPurchaseCostBasis,
+                })
+
+                transfers.push({
+                    symbol: '',
+                    symbolUri: '',
+                    quantity: 0,
+                    type: `${transfers[purchaseToken].symbol}-GAIN/LOSS`,
+                    price: 0,
+                    value: (postCostBasis ?? 0) + transfers[purchaseToken].value,
+                    hash: transfers[purchaseToken].hash
+                })
+
+                if (transfers.length === 1) break
+
+                transfers[boughtToken].refHash = despositsMeta[i].hash
                 const spotPriceMeta = await getTokenPriceAndVAA(transfers[boughtToken].blockTime, transfers[boughtToken].symbol);
                 const boughtCostBasis = calculateCostBasis(spotPriceMeta)
-                if(transfers[boughtToken].symbol === 'MNGO'){
-                    console.log('kj')
-                }
                 transfers[boughtToken].costBasis = boughtCostBasis
-                transfers[boughtToken].value = calculateFiatValue(boughtCostBasis, transfers[boughtToken].quantity)
-                
-                if(transfers[purchaseToken].value && transfers[boughtToken].value){
-                    const gains = transfers[purchaseToken].value + transfers[boughtToken].value
-                    transfers.push({
-                            blockTime: transfers[boughtToken].blockTime,
-                            timestamp: transfers[boughtToken].timestamp,
-                            symbol: '',
-                            symbolUri: gains > 0 ? '/gain.png' : '/loss.png',
-                            quantity: 0,
-                            type: gains > 0 ? 'GAIN' : 'LOSS',
-                            price: 0,
-                            value: gains,
-                            hash: transfers[boughtToken].hash
-                    }) 
-                }
-                
+                transfers[boughtToken].value = postCostBasis //calculateFiatValue(boughtCostBasis, transfers[boughtToken].quantity)
+                transfers[boughtToken].vaa = postSpotPriceMeta?.vaa
+
                 despositsMeta.push({
                     symbol: transfers[boughtToken].symbol,
                     hash: transfers[boughtToken].hash,
@@ -120,9 +134,9 @@ export const addCostBasisToPurchase = async (transfers: any[], despositsMeta: an
 }
 
 const calculateFiatValue = (boughtCostBasis: any, quantity: any) => {
-    if(!(typeof boughtCostBasis === 'number') || isNaN(boughtCostBasis)) return
+    if (!(typeof boughtCostBasis === 'number') || isNaN(boughtCostBasis)) return
 
-    if(!(typeof quantity === 'number') || isNaN(quantity)) return
+    if (!(typeof quantity === 'number') || isNaN(quantity)) return
 
     const qty = Math.abs(quantity)
     return boughtCostBasis * qty
@@ -144,8 +158,8 @@ const calculateCostBasis = (costBasis: any) => {
     // Convert number to string
     let result = number.toString();
 
-    if(result.length < decimals){
-       result =  "0".repeat((decimals - result.length) + 1) + result
+    if (result.length < decimals) {
+        result = "0".repeat((decimals - result.length) + 1) + result
     }
 
     // Insert decimal at the 5th index from the right
