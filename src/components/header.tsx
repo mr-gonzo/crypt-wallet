@@ -1,6 +1,8 @@
 import Image from "next/image";
 import styles from "@/styles/Home.module.css";
 import { useState } from "react";
+import WalletConnectButton from "./walletConnectButton"
+
 
 function AppHeader() {
     const [isNetworkSwitchHighlighted, setIsNetworkSwitchHighlighted] =
@@ -32,28 +34,7 @@ function AppHeader() {
              width="203"
          />
      </div>
-     <div className={styles.buttons}>
-         <div
-             onClick={closeAll}
-             className={`${styles.highlight} ${
-                 isNetworkSwitchHighlighted
-                     ? styles.highlightSelected
-                     : ``
-             }`}
-         >
-             <w3m-network-button />
-         </div>
-         <div
-             onClick={closeAll}
-             className={`${styles.highlight} ${
-                 isConnectHighlighted
-                     ? styles.highlightSelected
-                     : ``
-             }`}
-         >
-             <w3m-button balance='hide' />
-         </div>
-     </div>
+     <WalletConnectButton />
  </div>
 </header>)
 }
