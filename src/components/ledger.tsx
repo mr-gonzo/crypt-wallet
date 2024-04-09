@@ -13,9 +13,7 @@ const Ledger = ({ accountAddress }: props) => {
 
     // State to store the fetched data
     const [data, setData] = useState<[]>([]);
-    useEffect(() => {
-        console.log('Data has changed:', data);
-      }, [data]);
+  
     // State to track loading status
     const [loading, setLoading] = useState(true);
     // State to track error status
