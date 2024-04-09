@@ -149,7 +149,8 @@ const Ledger = ({ accountAddress }: props) => {
                                         <div key={`${item.id}-na-${index}`} className={styles.ledgerCell}>{tx.costBasis}</div>
                                     </div>
                                 )
-                            })}
+                            }})
+                        }
 
                         </>
                     )
